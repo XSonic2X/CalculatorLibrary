@@ -41,38 +41,34 @@ public class Mathematics
         return Level1();
     }
 
-    private INumber OperatorBuilder(INumber number)
+    private INumber OperatorBuilderLv1(INumber number)
         => _txt switch
         {
             "+" => new Addition(number, Level1()),
             "-" => new Subtraction(number, Level1()),
-            "*" => new Multiplication(number, Level1()),
-            "/" => new Division(number, Level1()),
-            _=> number
+            _ => number
+        };
+
+    private INumber OperatorBuilderLv2(INumber number)
+        => _txt switch
+        {
+            "*" => new Multiplication(number, Level2()),
+            "/" => new Division(number, Level2()),
+            _ => number
         };
 
     private INumber Level1()
-    {
-        INumber number = Level2();
-        if (number is null) return number;
-        return OperatorBuilder(number);
-    }
+        => OperatorBuilderLv1(OperatorBuilderLv2(Level2()));
 
     private INumber Level2()
     {
         Next();
         if (_txt == string.Empty) return null;
-        INumber number = Level3();
-        number ??= CreateNumber();
-        return number;
+        return Level3() ?? CreateNumber();
     }
 
     private INumber Level3()
-    {
-        if (_keyValues.TryGetValue(_txt, out IBuilderNumber? value))
-            return value.Get();
-        return null;
-    }
+        => _keyValues.TryGetValue(_txt, out IBuilderNumber? value) ? value.Get() : null;
 
     private INumber CreateNumber()
     {
@@ -91,30 +87,42 @@ public class Mathematics
     }
 
     private void Next()
-        => _txt = _index < _matches.Count ? _matches[_index++].Value : string.Empty;
+        => _txt = _index < _matches.Count ?
+        _matches[_index++].Value :
+        string.Empty;
 
-    private class NegativeBuilder(Mathematics mathematics) : IBuilderNumber
+    private class NegativeBuilder(Mathematics mathematics) : BuilderNumber(mathematics)
     {
-        public Mathematics mathematics = mathematics;
+        public override INumber Get()
+            => new Negative(Level2());
+    }
 
-        public INumber Get()
+    private class StaplesBuilder(Mathematics mathematics) : BuilderNumber(mathematics)
+    {
+
+        public override INumber Get()
         {
-            return new Negative(mathematics.Level2());
+            INumber number = new Staples(Level1());
+            if (mathematics._txt is not ")") return null;
+            Next();
+            return number;
         }
     }
 
-    private class StaplesBuilder(Mathematics mathematics) : IBuilderNumber
+    public abstract class BuilderNumber(Mathematics mathematics) : IBuilderNumber
     {
+        protected Mathematics mathematics = mathematics;
 
-        public Mathematics mathematics = mathematics;
+        public INumber Level1()
+            => mathematics.Level1();
 
-        public virtual INumber Get()
-        {
-            INumber number = new Staples(mathematics.Level1());
-            if (mathematics._txt is not ")") return null;
-            mathematics.Next();
-            return number;
-        }
+        public INumber Level2()
+            => mathematics.Level2();
+
+        public void Next()
+            => mathematics.Next();
+
+        public abstract INumber Get();
     }
 
 }
