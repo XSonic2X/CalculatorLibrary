@@ -1,5 +1,4 @@
 ﻿using CalculatorLibrary.Element_Number;
-using CalculatorLibrary.Element_Number.Element_operators;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -51,16 +50,16 @@ public class Mathematics
     private INumber OperatorBuilderLv1(INumber number)
         => _txt switch
         {
-            "+" => new Addition(number, Level1()),
-            "-" => new Subtraction(number, Level1()),
+            "+" => new ExpressionOperators(number, ExpressionOperators.Select.Addition, Level1()),
+            "-" => new ExpressionOperators(number, ExpressionOperators.Select.Subtraction, Level1()),
             _ => number
         };
 
     private INumber OperatorBuilderLv2(INumber number)
         => _txt switch
         {
-            "*" => new Multiplication(number, Level2()),
-            "/" => new Division(number, Level2()),
+            "*" => new ExpressionOperators(number, ExpressionOperators.Select.Multiplication, Level2()),
+            "/" => new ExpressionOperators(number, ExpressionOperators.Select.Division, Level2()),
             _ => number
         };
 
@@ -115,7 +114,7 @@ public class Mathematics
         public override INumber Get()
         {
             INumber number = new Staples(Level1());
-            if (_txt is not ")") return null;
+            if (txt is not ")") return null;
             Next();
             return number;
         }
@@ -130,7 +129,7 @@ public class Mathematics
 
         protected Mathematics mathematics;
 
-        protected string _txt { get => mathematics._txt; }
+        protected string txt { get => mathematics._txt; }
 
         public static void Initialization(BuilderNumber BN, Mathematics m)
             => BN.mathematics = m;
