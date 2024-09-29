@@ -1,7 +1,6 @@
 ﻿using CalculatorLibrary;
 using CalculatorLibrary.Element_Number;
 using static CalculatorLibrary.Mathematics;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace Test
