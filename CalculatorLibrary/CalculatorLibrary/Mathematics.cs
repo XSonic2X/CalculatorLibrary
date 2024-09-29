@@ -2,6 +2,7 @@
 using CalculatorLibrary.Element_Number.Element_operators;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace CalculatorLibrary;
@@ -9,28 +10,34 @@ namespace CalculatorLibrary;
 public class Mathematics
 {
     public Mathematics()
-        => Initialization();
-
-    public Mathematics(Dictionary<string, IBuilderNumber> keyValues, string regexp)
     {
-        _regexp = regexp;
+        _regexP = @"[0-9]*\.?[0-9]+([0-9]+)?|[()+*-/]";
+        Initialization();
+    }
+
+    public Mathematics(Dictionary<string, BuilderNumber> keyValues, string regexp)
+    {
+        _regexP = regexp;
         _keyValues = keyValues;
         Initialization();
     }
 
     private void Initialization()
     {
-        _regex = new Regex(_regexp);
+        _regex = new Regex(_regexP);
         _keyValues ??= [];
-        _keyValues.Add("-", new NegativeBuilder(this));
-        _keyValues.Add("(", new StaplesBuilder(this));
+        _keyValues.Add("-", new NegativeBuilder());
+        _keyValues.Add("(", new StaplesBuilder());
+        foreach (var key in _keyValues)
+            BuilderNumber.Initialization(key.Value,this);
     }
 
-    static private string _regexp = @"[0-9]*\.?[0-9]+([0-9]+)?|[()+*-/]";
+    public Dictionary<string, BuilderNumber> _keyValues;
 
-    public Dictionary<string, IBuilderNumber> _keyValues;
+    private readonly string _regexP;
     private string _txt = string.Empty;
     private int _index;
+
     private Regex _regex;
     private MatchCollection _matches;
 
@@ -68,14 +75,14 @@ public class Mathematics
     }
 
     private INumber Level3()
-        => _keyValues.TryGetValue(_txt, out IBuilderNumber? value) ? value.Get() : null;
+        => _keyValues.TryGetValue(_txt, out BuilderNumber? value) ? value.Get() : null;
 
     private INumber CreateNumber()
     {
         INumber number;
         try
         {
-            number = new Number(Convert.ToDouble(_txt));
+            number = new Number(double.Parse(_txt, CultureInfo.InvariantCulture));
             Next();
         }
         catch
@@ -91,27 +98,42 @@ public class Mathematics
         _matches[_index++].Value :
         string.Empty;
 
-    private class NegativeBuilder(Mathematics mathematics) : BuilderNumber(mathematics)
+    public override string ToString()
+        => $"Mathematics regex pattern {_regexP}";
+
+
+    private sealed class NegativeBuilder : BuilderNumber
     {
+
         public override INumber Get()
             => new Negative(Level2());
     }
 
-    private class StaplesBuilder(Mathematics mathematics) : BuilderNumber(mathematics)
+    private sealed class StaplesBuilder : BuilderNumber
     {
 
         public override INumber Get()
         {
             INumber number = new Staples(Level1());
-            if (mathematics._txt is not ")") return null;
+            if (_txt is not ")") return null;
             Next();
             return number;
         }
     }
 
-    public abstract class BuilderNumber(Mathematics mathematics) : IBuilderNumber
+    /// <summary>
+    /// To create custom solutions
+    /// </summary>
+    /// <param name="mathematics"></param>
+    public abstract class BuilderNumber
     {
-        protected Mathematics mathematics = mathematics;
+
+        protected Mathematics mathematics;
+
+        protected string _txt { get => mathematics._txt; }
+
+        public static void Initialization(BuilderNumber BN, Mathematics m)
+            => BN.mathematics = m;
 
         public INumber Level1()
             => mathematics.Level1();
