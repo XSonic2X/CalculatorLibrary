@@ -1,9 +1,9 @@
 # CalculatorLibrary
 Solves mathematical problems found in strings.
 
-##Test display
+## Test display
 
-###1
+### 1
 ```csharp
 static void Main()
 {
@@ -22,7 +22,7 @@ static void MatchTest(Mathematics m, string txt)
     Console.WriteLine($"{number} = {number.Get()}");
 }
 ```
-###Output:
+### Output:
 ```
 5*2+5 = 15
 5+5*2 = 15
@@ -31,7 +31,7 @@ static void MatchTest(Mathematics m, string txt)
 End
 ```
 
-###2
+### 2
 ```csharp
 static void Main()
 {
@@ -86,7 +86,7 @@ class CastomBuilderNumber(DynamicNumber d) : BuilderNumber
     }
 }
 ```
-###Output:
+### Output:
 ```
 1*0,5 = 0,5
 2*0,5 = 1
