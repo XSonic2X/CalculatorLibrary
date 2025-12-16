@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace CalculatorLibrary;
 
-public class Mathematics
+public partial class Mathematics
 {
     public Mathematics()
     {
@@ -40,56 +40,44 @@ public class Mathematics
     private Regex _regex;
     private MatchCollection _matches;
 
-    public INumber GetNumber(string txt)
+    public bool GetNumber(string txt, out INumber? number)
     {
         _matches = _regex.Matches(txt);
         _index = 0;
-        return Level1();
+        number = Level1();
+        return number is not null;
     }
 
-    private INumber OperatorBuilderLv1(INumber number)
-        => _txt switch
+    private INumber? OperatorBuilder(INumber? number)
+        => number is not null? _txt switch
         {
-            "+" => new ExpressionOperators(number, ExpressionOperators.Select.Addition, Level1()),
-            "-" => new ExpressionOperators(number, ExpressionOperators.Select.Subtraction, Level1()),
+            "+" => ExpressionOperators.Build(number, ExpressionOperators.Select.Addition, Level1()),
+            "-" => ExpressionOperators.Build(number, ExpressionOperators.Select.Subtraction, Level1()),
+            "*" => ExpressionOperators.Build(number, ExpressionOperators.Select.Multiplication, Level2()),
+            "/" => ExpressionOperators.Build(number, ExpressionOperators.Select.Division, Level2()),
             _ => number
-        };
+        } : null;
 
-    private INumber OperatorBuilderLv2(INumber number)
-        => _txt switch
-        {
-            "*" => new ExpressionOperators(number, ExpressionOperators.Select.Multiplication, Level2()),
-            "/" => new ExpressionOperators(number, ExpressionOperators.Select.Division, Level2()),
-            _ => number
-        };
 
-    private INumber Level1()
-        => OperatorBuilderLv1(OperatorBuilderLv2(Level2()));
+    private INumber? Level1()
+        => OperatorBuilder(OperatorBuilder(Level2()));
 
-    private INumber Level2()
+    private INumber? Level2()
     {
         Next();
-        if (_txt == string.Empty) return null;
-        return Level3() ?? CreateNumber();
+        return _txt == string.Empty? null:
+            _keyValues.TryGetValue(_txt, out BuilderNumber? value) ? value.Get() :
+            CreateNumber();
     }
-
-    private INumber Level3()
-        => _keyValues.TryGetValue(_txt, out BuilderNumber? value) ? value.Get() : null;
 
     private INumber CreateNumber()
     {
-        INumber number;
-        try
+        if (double.TryParse(_txt, NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
         {
-            number = new Number(double.Parse(_txt, CultureInfo.InvariantCulture));
             Next();
+            return new Number(value);
         }
-        catch
-        (Exception ex)
-        {
-            throw new Exception(ex.Message);
-        }
-        return number;
+        throw new FormatException($"Invalid number format: {_txt}");
     }
 
     private void Next()
@@ -101,20 +89,32 @@ public class Mathematics
         => $"Mathematics regex pattern {_regexP}";
 
 
+
+
+}
+
+partial class Mathematics
+{
     private sealed class NegativeBuilder : BuilderNumber
     {
 
-        public override INumber Get()
-            => new Negative(Level2());
+        public override INumber? Get()
+        {
+            INumber? number = Level2();
+            return number is not null ? new Negative(number): null;
+        }
+
     }
 
     private sealed class StaplesBuilder : BuilderNumber
     {
 
-        public override INumber Get()
+        public override INumber? Get()
         {
-            INumber number = new Staples(Level1());
-            if (txt is not ")") return null;
+            INumber? number = Level1();
+            if (number is null) return null;
+            number = new Staples(number);
+            if (txt is not ")") throw new InvalidOperationException("Expected closing parenthesis");
             Next();
             return number;
         }
@@ -127,23 +127,24 @@ public class Mathematics
     public abstract class BuilderNumber
     {
 
-        protected Mathematics mathematics;
-
         protected string txt { get => mathematics._txt; }
+
+        private Mathematics mathematics;
 
         public static void Initialization(BuilderNumber BN, Mathematics m)
             => BN.mathematics = m;
 
-        public INumber Level1()
+        protected INumber? Level1()
             => mathematics.Level1();
 
-        public INumber Level2()
+        protected INumber? Level2()
             => mathematics.Level2();
 
-        public void Next()
+        protected void Next()
             => mathematics.Next();
 
-        public abstract INumber Get();
+        public abstract INumber? Get();
+
     }
 
 }

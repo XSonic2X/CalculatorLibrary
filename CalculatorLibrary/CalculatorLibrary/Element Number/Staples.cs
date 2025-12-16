@@ -8,4 +8,5 @@ public sealed class Staples(INumber number) : INumber
     public double Get() => number.Get();
 
     public override string ToString() => $"({number})";
+
 }

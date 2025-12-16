@@ -8,18 +8,19 @@ Solves mathematical problems found in strings.
 static void Main()
 {
     Mathematics mathematics = new();
-    MatchTest(mathematics, "5*2+5");
-    MatchTest(mathematics, "5+5*2");
-    MatchTest(mathematics, "5+5*(2+2)");
-    MatchTest(mathematics, "-2+(5+5)*2+1");
+    Demo(mathematics, "5*2+5");
+    Demo(mathematics, "5+5*2");
+    Demo(mathematics, "5+5*(2+2)");
+    Demo(mathematics, "-2+(5+5)*2+1");
+    Demo(mathematics, "2*5+5*4");
     Console.WriteLine("End");
     Console.ReadLine();
 }
 
-static void MatchTest(Mathematics m, string txt)
+static void Demo(Mathematics m, string txt)
 {
-    INumber number = m.GetNumber(txt);
-    Console.WriteLine($"{number} = {number.Get()}");
+    if(m.GetNumber(txt, out INumber? number))
+        Console.WriteLine($"{number} = {number.Get()}");
 }
 ```
 ### Output:
@@ -42,17 +43,17 @@ static void Main()
     keyValues.Add("[CastomTest]", new CastomBuilderNumber(d));
 
     Mathematics mathematics = new(keyValues, @"\[(.*?)\]|[0-9]*\.?[0-9]+([0-9]+)?|[()+*-/]");
-    INumber number = mathematics.GetNumber("[CastomTest]*0.5");
-    for (int i = 0; i < 5; i++)
-        d.Test(()=> MatchTest(mathematics, number));
+    if (mathematics.GetNumber("[CastomTest]*0.5", out INumber? number))
+    {
+        Action a = () => Console.WriteLine($"{number} = {number.Get()}");
+        for (int i = 0; i < 5; i++)
+            d.Test(a);
+    }
 
 
     Console.WriteLine("End");
     Console.ReadLine();
 }
-
-static void MatchTest(Mathematics m, INumber number)
-    => Console.WriteLine($"{number} = {number.Get()}");
 	
 class DynamicNumber
 {
@@ -67,23 +68,27 @@ class DynamicNumber
 
 class NumberCastom(DynamicNumber d) : INumber
 {
+
     private DynamicNumber d = d;
 
     public double Get()
         => d.i;
 
     public override string ToString()
-        => $"{d.i}";
+        => d.i.ToString();
+
 }
 
 class CastomBuilderNumber(DynamicNumber d) : BuilderNumber
 {
     private DynamicNumber d = d;
-    public override INumber Get()
+
+    public override INumber? Get()
     {
         Next();
         return new NumberCastom(d);
     }
+
 }
 ```
 ### Output:

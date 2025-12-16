@@ -5,8 +5,10 @@ public sealed class Negative(INumber number) : INumber
 
     public INumber number = number;
 
-    public double Get() => -number.Get();
+    public double Get()
+        => -number.Get();
 
-    public override string ToString() => $"-{number}";
+    public override string ToString()
+        => $"-{number}";
 
 }
