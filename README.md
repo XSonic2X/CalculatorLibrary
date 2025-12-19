@@ -5,7 +5,7 @@ Solves mathematical problems found in strings.
 
 ### 1
 ```csharp
-static void Main()
+public static void Main1()
 {
     Mathematics mathematics = new();
     Demo(mathematics, "5-3-2");
@@ -15,6 +15,7 @@ static void Main()
     Demo(mathematics, "5+5*(2+2)");
     Demo(mathematics, "-2+(5+5)*2+1");
     Demo(mathematics, "2*5+5*4");
+    Demo(mathematics, "100/2/2/2");
     Console.WriteLine("End");
     Console.ReadLine();
 }
@@ -34,10 +35,60 @@ static void Demo(Mathematics m, string txt)
 5+5*(2+2) = 25
 -2+(5+5)*2+1 = 19
 2*5+5*4 = 30
+100/2/2/2 = 12,5
 End
 ```
 
 ### 2
+```csharp
+public static void Main1()
+{
+    
+    Dictionary<string, Mathematics.BuilderNumber> keyValues = [];
+    keyValues.Add("^", new BuilderDegree());
+    Mathematics mathematics = new(keyValues, @"[0-9]*\.?[0-9]+([0-9]+)?|[\^()+*-/]");
+    Demo(mathematics, "2-1*(2^3)+1");
+    Demo(mathematics, "2-1+2^3*1");
+    Console.WriteLine("End");
+    Console.ReadLine();
+}
+static void Demo(Mathematics m, string txt)
+{
+    if (m.GetNumber(txt, out INumber? number))
+        Console.WriteLine($"{number} = {number.Get()}");
+}
+public class BuilderDegree : Mathematics.BuilderNumber
+{
+
+    public override INumber? Get(INumber? number)
+    {
+        if (number is null) throw new FormatException($"Invalid number format: {txt}");
+        return new Degree(number, Level2());
+    }
+
+}
+
+public class Degree(INumber num1, INumber num2) : INumber
+{
+
+    public INumber num1 = num1, num2 = num2;
+
+    public double Get()
+        => Math.Pow(num1.Get(), num2.Get());
+
+    public override string ToString()
+        => $"{num1}^{num2}";
+
+}
+```
+### Output:
+```
+2-1*(2^3)+1 = -5
+2-1+2^3*1 = 9
+End
+```
+
+### 3
 ```csharp
 static void Main()
 {

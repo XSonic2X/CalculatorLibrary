@@ -28,7 +28,7 @@ public partial class Mathematics
         _keyValues.Add("-", new NegativeBuilder());
         _keyValues.Add("(", new StaplesBuilder());
         foreach (var key in _keyValues)
-            BuilderNumber.Initialization(key.Value,this);
+            BuilderNumber.Initialization(key.Value, this);
     }
 
     private readonly string _regexP;
@@ -65,13 +65,13 @@ public partial class Mathematics
 
     public INumber? Level1A(INumber? number)
     {
-        while (_index < _matches.Count && BuilderINumberA(ref number));
+        while (_index < _matches.Count && BuilderINumberA(ref number)) ;
         return number;
     }
 
     public INumber? Level1B(INumber? number)
     {
-        while (_index < _matches.Count && BuilderINumberB(ref number));
+        while (_index < _matches.Count && BuilderINumberB(ref number)) ;
         return number;
     }
 
@@ -80,21 +80,38 @@ public partial class Mathematics
         if (numberA is null) return false;
         if (GetOperator(out ExpressionOperators.Select? selectA))
         {
+            if(selectA is ExpressionOperators.Select.Multiplication ||
+                    selectA is ExpressionOperators.Select.Division)
+            {
+                numberA = Level1B(numberA);
+                return true;
+            }
             INumber? numberB = Level2();
             if (numberB is not null)
                 if (GetOperator(out ExpressionOperators.Select? selectB) &&
                     selectB is ExpressionOperators.Select.Multiplication ||
                     selectB is ExpressionOperators.Select.Division)
                 {
-                    numberA = ExpressionOperators.Build(numberA, selectA.Value, new Layer(Level1B(numberB)));
+                    numberA = ExpressionOperators.Build(numberA, selectA.Value, Level1B(numberB));
                     return true;
                 }
+                else if (selectB is null && _keyValues.TryGetValue(_txt, out BuilderNumber? value))
+                {
+                    numberA = ExpressionOperators.Build(numberA, selectA.Value, value.Get(numberB));
+                    return true;
+                }
+
             numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
+            return true;
+        }
+        else if (_keyValues.TryGetValue(_txt, out BuilderNumber? value))
+        {
+            numberA = value.Get(numberA);
             return true;
         }
         return false;
     }
-    
+
     public bool BuilderINumberB(ref INumber? numberA)
     {
         if (numberA is null) return false;
@@ -109,19 +126,28 @@ public partial class Mathematics
                     numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
                     return false;
                 }
+                else if (selectB is null && _keyValues.TryGetValue(_txt, out BuilderNumber? value))
+                {
+                    numberA = ExpressionOperators.Build(numberA, selectA.Value, value.Get(numberB));
+                    return false;
+                }
 
             numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
             return true;
         }
-
+        else if (_keyValues.TryGetValue(_txt, out BuilderNumber? value))
+        {
+            numberA = value.Get(numberA);
+            return true;
+        }
         return false;
     }
 
     private INumber? Level2()
     {
         Next();
-        return _txt == string.Empty? null:
-            _keyValues.TryGetValue(_txt, out BuilderNumber? value) ? value.Get() :
+        return _txt == string.Empty ? null :
+            _keyValues.TryGetValue(_txt, out BuilderNumber? value) ? value.Get(null) :
             CreateNumber();
     }
 
@@ -150,10 +176,11 @@ partial class Mathematics
     private sealed class NegativeBuilder : BuilderNumber
     {
 
-        public override INumber? Get()
+        public override INumber? Get(INumber? number)
         {
-            INumber? number = Level2();
-            return number is not null ? new Negative(number): null;
+            if (number is not null) throw new FormatException($"Invalid number format: {txt}");
+            number = Level2();
+            return number is not null ? new Negative(number) : null;
         }
 
     }
@@ -161,33 +188,16 @@ partial class Mathematics
     private sealed class StaplesBuilder : BuilderNumber
     {
 
-        public override INumber? Get()
+        public override INumber? Get(INumber? number)
         {
-            INumber? number = Level1();
+            if (number is not null) throw new FormatException($"Invalid number format: {txt}");
+            number = Level1();
             if (number is null) return null;
             number = new Staples(number);
             if (txt is not ")") throw new InvalidOperationException("Expected closing parenthesis");
             Next();
             return number;
         }
-    }
-
-    public class Layer : INumber
-    {
-
-        public Layer(INumber number_)
-        { 
-            number = number_;
-        }
-
-        public INumber number;
-
-        public double Get()
-            => number.Get();
-
-        public override string ToString()
-            => number.ToString();
-
     }
 
     /// <summary>
@@ -216,7 +226,7 @@ partial class Mathematics
         protected void Next()
             => mathematics.Next();
 
-        public abstract INumber? Get();
+        public abstract INumber? Get(INumber? number);
 
     }
 
