@@ -197,12 +197,15 @@ partial class Mathematics
     public abstract class BuilderNumber
     {
 
-        protected string txt { get => mathematics._txt; }
+        protected string txt { get => mathematics is null ? string.Empty : mathematics._txt; }
 
-        private Mathematics mathematics;
+        private Mathematics? mathematics = null;
 
         public static void Initialization(BuilderNumber BN, Mathematics m)
-            => BN.mathematics = m;
+        {
+            if (BN.mathematics is not null) throw new Exception("BuilderNumber has been initialized, it cannot be reused in other Mathematics");
+            BN.mathematics = m;
+        }
 
         protected INumber? Level1()
             => mathematics.Level1();

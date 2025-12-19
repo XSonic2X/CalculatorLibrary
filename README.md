@@ -45,10 +45,10 @@ static void Main()
 
     Dictionary<string, BuilderNumber> keyValues = [];
 
-    keyValues.Add("[CastomTest]", new CastomBuilderNumber(d));
+    keyValues.Add("[CustomTest]", new CustomBuilderNumber(d));
 
     Mathematics mathematics = new(keyValues, @"\[(.*?)\]|[0-9]*\.?[0-9]+([0-9]+)?|[()+*-/]");
-    if (mathematics.GetNumber("[CastomTest]*0.5", out INumber? number))
+    if (mathematics.GetNumber("[CustomTest]*0.5", out INumber? number))
     {
         Action a = () => Console.WriteLine($"{number} = {number.Get()}");
         for (int i = 0; i < 5; i++)
@@ -71,7 +71,7 @@ class DynamicNumber
     }
 }
 
-class NumberCastom(DynamicNumber d) : INumber
+class NumberCustom(DynamicNumber d) : INumber
 {
 
     private DynamicNumber d = d;
@@ -84,14 +84,14 @@ class NumberCastom(DynamicNumber d) : INumber
 
 }
 
-class CastomBuilderNumber(DynamicNumber d) : BuilderNumber
+class CustomBuilderNumber(DynamicNumber d) : BuilderNumber
 {
     private DynamicNumber d = d;
 
     public override INumber? Get()
     {
         Next();
-        return new NumberCastom(d);
+        return new NumberCustom(d);
     }
 
 }
