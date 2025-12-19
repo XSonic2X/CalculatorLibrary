@@ -1,11 +1,10 @@
 # CalculatorLibrary
-Solves mathematical problems found in strings.
+A lightweight, extensible, recursive descent mathematical expression parser for C#.
+Designed to handle standard arithmetic order of operations and allow for custom function/operator injection via the `Builder` pattern.
 
-## Test display
-
-### 1
+### 1. Basic Usage
 ```csharp
-public static void Main1()
+public static void Main()
 {
     Mathematics mathematics = new();
     Demo(mathematics, "5-3-2");
@@ -39,9 +38,10 @@ static void Demo(Mathematics m, string txt)
 End
 ```
 
-### 2
+### 2. Advanced Usage: Custom Operators (e.g., Power `^`)
+You can extend the parser by creating a class that inherits from `Mathematics.BuilderNumber` and passing it to the constructor.
 ```csharp
-public static void Main1()
+public static void Main()
 {
     
     Dictionary<string, Mathematics.BuilderNumber> keyValues = [];
@@ -88,18 +88,20 @@ public class Degree(INumber num1, INumber num2) : INumber
 End
 ```
 
-### 3
+### 3. Custom Variables
+You can also use the builder to return static or dynamic values (variables).
 ```csharp
-static void Main()
+public static void Main()
 {
+
     DynamicNumber d = new DynamicNumber();
 
-    Dictionary<string, BuilderNumber> keyValues = [];
+    Dictionary<string, Mathematics.BuilderNumber> keyValues = [];
 
-    keyValues.Add("[CustomTest]", new CustomBuilderNumber(d));
+    keyValues.Add("X", new CustomBuilderNumber(d));
 
-    Mathematics mathematics = new(keyValues, @"\[(.*?)\]|[0-9]*\.?[0-9]+([0-9]+)?|[()+*-/]");
-    if (mathematics.GetNumber("[CustomTest]*0.5", out INumber? number))
+    Mathematics mathematics = new(keyValues, @"X|[0-9]*\.?[0-9]+([0-9]+)?|[()+*-/]");
+    if (mathematics.GetNumber("X*0.5", out INumber? number))
     {
         Action a = () => Console.WriteLine($"{number} = {number.Get()}");
         for (int i = 0; i < 5; i++)
@@ -110,7 +112,7 @@ static void Main()
     Console.WriteLine("End");
     Console.ReadLine();
 }
-	
+
 class DynamicNumber
 {
     public int i = 0;

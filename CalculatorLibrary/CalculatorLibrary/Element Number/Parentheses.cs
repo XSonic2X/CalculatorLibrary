@@ -1,6 +1,6 @@
 ﻿namespace CalculatorLibrary.Element_Number;
 
-public sealed class Staples(INumber number) : INumber
+public sealed class Parentheses(INumber number) : INumber
 {
 
     public INumber number = number;

@@ -26,7 +26,7 @@ public partial class Mathematics
         _regex = new Regex(_regexP);
         _keyValues ??= [];
         _keyValues.Add("-", new NegativeBuilder());
-        _keyValues.Add("(", new StaplesBuilder());
+        _keyValues.Add("(", new ParenthesesBuilder());
         foreach (var key in _keyValues)
             BuilderNumber.Initialization(key.Value, this);
     }
@@ -185,7 +185,7 @@ partial class Mathematics
 
     }
 
-    private sealed class StaplesBuilder : BuilderNumber
+    private sealed class ParenthesesBuilder : BuilderNumber
     {
 
         public override INumber? Get(INumber? number)
@@ -193,7 +193,7 @@ partial class Mathematics
             if (number is not null) throw new FormatException($"Invalid number format: {txt}");
             number = Level1();
             if (number is null) return null;
-            number = new Staples(number);
+            number = new Parentheses(number);
             if (txt is not ")") throw new InvalidOperationException("Expected closing parenthesis");
             Next();
             return number;
