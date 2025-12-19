@@ -8,6 +8,8 @@ Solves mathematical problems found in strings.
 static void Main()
 {
     Mathematics mathematics = new();
+    Demo(mathematics, "5-3-2");
+    Demo(mathematics, "3+2-2*2+1+5-3-2");
     Demo(mathematics, "5*2+5");
     Demo(mathematics, "5+5*2");
     Demo(mathematics, "5+5*(2+2)");
@@ -25,10 +27,13 @@ static void Demo(Mathematics m, string txt)
 ```
 ### Output:
 ```
+5-3-2 = 0
+3+2-2*2+1+5-3-2 = 2
 5*2+5 = 15
 5+5*2 = 15
 5+5*(2+2) = 25
 -2+(5+5)*2+1 = 19
+2*5+5*4 = 30
 End
 ```
 

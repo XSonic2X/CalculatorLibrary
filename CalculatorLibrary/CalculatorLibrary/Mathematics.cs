@@ -31,12 +31,11 @@ public partial class Mathematics
             BuilderNumber.Initialization(key.Value,this);
     }
 
-    public Dictionary<string, BuilderNumber> _keyValues;
-
     private readonly string _regexP;
     private string _txt = string.Empty;
     private int _index;
 
+    private Dictionary<string, BuilderNumber> _keyValues;
     private Regex _regex;
     private MatchCollection _matches;
 
@@ -48,19 +47,75 @@ public partial class Mathematics
         return number is not null;
     }
 
-    private INumber? OperatorBuilder(INumber? number)
-        => number is not null? _txt switch
+    public bool GetOperator(out ExpressionOperators.Select? select)
+    {
+        select = _txt switch
         {
-            "+" => ExpressionOperators.Build(number, ExpressionOperators.Select.Addition, Level1()),
-            "-" => ExpressionOperators.Build(number, ExpressionOperators.Select.Subtraction, Level1()),
-            "*" => ExpressionOperators.Build(number, ExpressionOperators.Select.Multiplication, Level2()),
-            "/" => ExpressionOperators.Build(number, ExpressionOperators.Select.Division, Level2()),
-            _ => number
-        } : null;
+            "+" => ExpressionOperators.Select.Addition,
+            "-" => ExpressionOperators.Select.Subtraction,
+            "*" => ExpressionOperators.Select.Multiplication,
+            "/" => ExpressionOperators.Select.Division,
+            _ => null
+        };
+        return select is not null;
+    }
 
+    public INumber? Level1()
+        => Level1A(Level2());
 
-    private INumber? Level1()
-        => OperatorBuilder(OperatorBuilder(Level2()));
+    public INumber? Level1A(INumber? number)
+    {
+        while (_index < _matches.Count && BuilderINumberA(ref number));
+        return number;
+    }
+
+    public INumber? Level1B(INumber? number)
+    {
+        while (_index < _matches.Count && BuilderINumberB(ref number));
+        return number;
+    }
+
+    public bool BuilderINumberA(ref INumber? numberA)
+    {
+        if (numberA is null) return false;
+        if (GetOperator(out ExpressionOperators.Select? selectA))
+        {
+            INumber? numberB = Level2();
+            if (numberB is not null)
+                if (GetOperator(out ExpressionOperators.Select? selectB) &&
+                    selectB is ExpressionOperators.Select.Multiplication ||
+                    selectB is ExpressionOperators.Select.Division)
+                {
+                    numberA = ExpressionOperators.Build(numberA, selectA.Value, new Layer(Level1B(numberB)));
+                    return true;
+                }
+            numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
+            return true;
+        }
+        return false;
+    }
+    
+    public bool BuilderINumberB(ref INumber? numberA)
+    {
+        if (numberA is null) return false;
+        if (GetOperator(out ExpressionOperators.Select? selectA))
+        {
+            INumber? numberB = Level2();
+            if (numberB is not null)
+                if (GetOperator(out ExpressionOperators.Select? selectB) &&
+                    selectB is ExpressionOperators.Select.Addition ||
+                    selectB is ExpressionOperators.Select.Subtraction)
+                {
+                    numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
+                    return false;
+                }
+
+            numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
+            return true;
+        }
+
+        return false;
+    }
 
     private INumber? Level2()
     {
@@ -87,9 +142,6 @@ public partial class Mathematics
 
     public override string ToString()
         => $"Mathematics regex pattern {_regexP}";
-
-
-
 
 }
 
@@ -118,6 +170,24 @@ partial class Mathematics
             Next();
             return number;
         }
+    }
+
+    public class Layer : INumber
+    {
+
+        public Layer(INumber number_)
+        { 
+            number = number_;
+        }
+
+        public INumber number;
+
+        public double Get()
+            => number.Get();
+
+        public override string ToString()
+            => number.ToString();
+
     }
 
     /// <summary>

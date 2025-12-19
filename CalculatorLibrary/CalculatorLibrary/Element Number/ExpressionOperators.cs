@@ -32,7 +32,7 @@ public sealed partial class ExpressionOperators(INumber num1, Select select, INu
         ];
 
     public static INumber? Build(INumber a, Select select, INumber? b)
-        => b is not null ? new ExpressionOperators(a, select, b) : null;
+        => b is not null ? new ExpressionOperators(a, select, b) : a;
 
 }
 partial class ExpressionOperators
