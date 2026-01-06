@@ -8,6 +8,8 @@ namespace CalculatorLibrary;
 
 public partial class Mathematics
 {
+
+
     public Mathematics()
     {
         _regexP = @"[0-9]*\.?[0-9]+([0-9]+)?|[()+*-/]";
@@ -23,6 +25,7 @@ public partial class Mathematics
 
     private void Initialization()
     {
+        сache = new Dictionary<string, INumber>();
         _regex = new Regex(_regexP);
         _keyValues ??= [];
         _keyValues.Add("-", new NegativeBuilder());
@@ -36,130 +39,113 @@ public partial class Mathematics
     private int _index;
 
     private Dictionary<string, BuilderNumber> _keyValues;
+    private Dictionary<string, INumber> сache;
     private Regex _regex;
     private MatchCollection _matches;
 
     public bool GetNumber(string txt, out INumber? number)
     {
-        _matches = _regex.Matches(txt);
-        _index = 0;
-        number = Level1();
-        return number is not null;
-    }
-
-    public bool GetOperator(out ExpressionOperators.Select? select)
-    {
-        select = _txt switch
+        lock (сache)
         {
-            "+" => ExpressionOperators.Select.Addition,
-            "-" => ExpressionOperators.Select.Subtraction,
-            "*" => ExpressionOperators.Select.Multiplication,
-            "/" => ExpressionOperators.Select.Division,
-            _ => null
-        };
-        return select is not null;
+            _matches = _regex.Matches(txt);
+            _index = 0;
+            number = Level1();
+            сache.Clear();
+            return number is not null;
+        }
     }
 
     public INumber? Level1()
-        => Level1A(Level2());
-
-    public INumber? Level1A(INumber? number)
     {
-        while (_index < _matches.Count && BuilderINumberA(ref number)) ;
-        return number;
+        INumber? num = Level2();
+        while (_index < _matches.Count && InfoOperator())
+            num = BuilderINumberLowLevel(num);
+        return num;
     }
 
-    public INumber? Level1B(INumber? number)
+    public INumber? BuilderINumberLowLevel(INumber? num_)
     {
-        while (_index < _matches.Count && BuilderINumberB(ref number)) ;
-        return number;
-    }
-
-    public bool BuilderINumberA(ref INumber? numberA)
-    {
-        if (numberA is null) return false;
-        if (GetOperator(out ExpressionOperators.Select? selectA))
+        if (GetOperator(out ExpressionOperators.Select? selectA) &&
+                selectA is not ExpressionOperators.Select.Multiplication &&
+                selectA is not ExpressionOperators.Select.Division)
         {
-            if(selectA is ExpressionOperators.Select.Multiplication ||
-                    selectA is ExpressionOperators.Select.Division)
-            {
-                numberA = Level1B(numberA);
-                return true;
-            }
-            INumber? numberB = Level2();
-            if (numberB is not null)
-                if (GetOperator(out ExpressionOperators.Select? selectB) &&
-                    selectB is ExpressionOperators.Select.Multiplication ||
-                    selectB is ExpressionOperators.Select.Division)
-                {
-                    numberA = ExpressionOperators.Build(numberA, selectA.Value, Level1B(numberB));
-                    return true;
-                }
-                else if (selectB is null && _keyValues.TryGetValue(_txt, out BuilderNumber? value))
-                {
-                    numberA = ExpressionOperators.Build(numberA, selectA.Value, value.Get(numberB));
-                    return true;
-                }
+            INumber? num = Level2();
+            if (GetOperator(out ExpressionOperators.Select? selectB))
+                if (selectB is ExpressionOperators.Select.Multiplication || selectB is ExpressionOperators.Select.Division)
+                    return BuilderINumberLowLevel(
+                        new ExpressionOperators(num_, selectA.Value, BuilderINumberHighLevel(
+                            new ExpressionOperators(num, selectB.Value, Level2())
+                            )));
+                else return BuilderINumberLowLevel(new ExpressionOperators(num_, selectA.Value, num));
+            else return BuilderINumberLowLevel(new ExpressionOperators(num_, selectA.Value, BuilderINumberHighLevel(num)));
+        }
+        return BuilderINumberHighLevel(num_);
+    }
 
-            numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
-            return true;
+    public INumber? BuilderINumberHighLevel(INumber? num_)
+    {
+        if (GetOperator(out ExpressionOperators.Select? selectA) &&
+                selectA is ExpressionOperators.Select.Multiplication ||
+                selectA is ExpressionOperators.Select.Division)
+        {
+            INumber? num = Level2();
+            return BuilderINumberHighLevel(new ExpressionOperators(num_, selectA.Value, num));
         }
         else if (_keyValues.TryGetValue(_txt, out BuilderNumber? value))
-        {
-            numberA = value.Get(numberA);
-            return true;
-        }
-        return false;
-    }
-
-    public bool BuilderINumberB(ref INumber? numberA)
-    {
-        if (numberA is null) return false;
-        if (GetOperator(out ExpressionOperators.Select? selectA))
-        {
-            INumber? numberB = Level2();
-            if (numberB is not null)
-                if (GetOperator(out ExpressionOperators.Select? selectB) &&
-                    selectB is ExpressionOperators.Select.Addition ||
-                    selectB is ExpressionOperators.Select.Subtraction)
-                {
-                    numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
-                    return false;
-                }
-                else if (selectB is null && _keyValues.TryGetValue(_txt, out BuilderNumber? value))
-                {
-                    numberA = ExpressionOperators.Build(numberA, selectA.Value, value.Get(numberB));
-                    return false;
-                }
-
-            numberA = ExpressionOperators.Build(numberA, selectA.Value, numberB);
-            return true;
-        }
-        else if (_keyValues.TryGetValue(_txt, out BuilderNumber? value))
-        {
-            numberA = value.Get(numberA);
-            return true;
-        }
-        return false;
+            return value.Get(num_);
+        return num_;
     }
 
     private INumber? Level2()
     {
         Next();
-        return _txt == string.Empty ? null :
-            _keyValues.TryGetValue(_txt, out BuilderNumber? value) ? value.Get(null) :
-            CreateNumber();
+        if (_txt == string.Empty) return null;
+        INumber number;
+        if (сache.TryGetValue(_txt, out number))
+        {
+            Next();
+            return number;
+        }
+        if (_keyValues.TryGetValue(_txt, out BuilderNumber? value))
+        {
+            number = value.Get(null);
+            сache.Add(_txt, number);
+            return number;
+        }
+        return CreateNumber();
     }
 
     private INumber CreateNumber()
     {
         if (double.TryParse(_txt, NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
         {
+            INumber number = new Number(value);
+            сache.Add(_txt, number);
             Next();
-            return new Number(value);
+            return number;
         }
         throw new FormatException($"Invalid number format: {_txt}");
     }
+
+    private bool GetOperator(out ExpressionOperators.Select? select)
+        => (select = _txt switch
+        {
+            "+" => ExpressionOperators.Select.Addition,
+            "-" => ExpressionOperators.Select.Subtraction,
+            "*" => ExpressionOperators.Select.Multiplication,
+            "/" => ExpressionOperators.Select.Division,
+            _ => null
+        }) is not null;
+
+    private bool InfoOperator()
+        => _txt switch
+        {
+            "+" => true,
+            "-" => true,
+            "*" => true,
+            "/" => true,
+            _ => _keyValues.TryGetValue(_txt, out _)
+        };
 
     private void Next()
         => _txt = _index < _matches.Count ?

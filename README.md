@@ -49,6 +49,7 @@ public static void Main()
     Mathematics mathematics = new(keyValues, @"[0-9]*\.?[0-9]+([0-9]+)?|[\^()+*-/]");
     Demo(mathematics, "2-1*(2^3)+1");
     Demo(mathematics, "2-1+2^3*1");
+	Demo(mathematics, "2^3^4");
     Console.WriteLine("End");
     Console.ReadLine();
 }
@@ -85,6 +86,7 @@ public class Degree(INumber num1, INumber num2) : INumber
 ```
 2-1*(2^3)+1 = -5
 2-1+2^3*1 = 9
+2^3^4 = 2,4178516392292583E+24
 End
 ```
 
