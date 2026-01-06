@@ -19,9 +19,9 @@ public static void Main()
     Console.ReadLine();
 }
 
-static void Demo(Mathematics m, string txt)
+static void Demo(Mathematics m, string _currentToken)
 {
-    if(m.GetNumber(txt, out INumber? number))
+    if(m.GetNumber(_currentToken, out INumber? number))
         Console.WriteLine($"{number} = {number.Get()}");
 }
 ```
@@ -53,9 +53,9 @@ public static void Main()
     Console.WriteLine("End");
     Console.ReadLine();
 }
-static void Demo(Mathematics m, string txt)
+static void Demo(Mathematics m, string _currentToken)
 {
-    if (m.GetNumber(txt, out INumber? number))
+    if (m.GetNumber(_currentToken, out INumber? number))
         Console.WriteLine($"{number} = {number.Get()}");
 }
 public class BuilderDegree : Mathematics.BuilderNumber
@@ -63,7 +63,7 @@ public class BuilderDegree : Mathematics.BuilderNumber
 
     public override INumber? Get(INumber? number)
     {
-        if (number is null) throw new FormatException($"Invalid number format: {txt}");
+        if (number is null) throw new FormatException($"Invalid number format: {_currentToken}");
         return new Degree(number, Level2());
     }
 

@@ -25,37 +25,37 @@ public partial class Mathematics
 
     private void Initialization()
     {
-        сache = new Dictionary<string, INumber>();
+        cache = new Dictionary<string, INumber>();
         _regex = new Regex(_regexP);
         _keyValues ??= [];
         _keyValues.Add("-", new NegativeBuilder());
         _keyValues.Add("(", new ParenthesesBuilder());
-        foreach (var key in _keyValues)
+        foreach (KeyValuePair<string, BuilderNumber> key in _keyValues)
             BuilderNumber.Initialization(key.Value, this);
     }
 
     private readonly string _regexP;
-    private string _txt = string.Empty;
+    private string _currentToken = string.Empty;
     private int _index;
 
     private Dictionary<string, BuilderNumber> _keyValues;
-    private Dictionary<string, INumber> сache;
+    private Dictionary<string, INumber> cache;
     private Regex _regex;
     private MatchCollection _matches;
 
     public bool GetNumber(string txt, out INumber? number)
     {
-        lock (сache)
+        lock (cache)
         {
             _matches = _regex.Matches(txt);
             _index = 0;
             number = Level1();
-            сache.Clear();
+            cache.Clear();
             return number is not null;
         }
     }
 
-    public INumber? Level1()
+    private INumber? Level1()
     {
         INumber? num = Level2();
         while (_index < _matches.Count && InfoOperator())
@@ -63,7 +63,7 @@ public partial class Mathematics
         return num;
     }
 
-    public INumber? BuilderINumberLowLevel(INumber? num_)
+    private INumber? BuilderINumberLowLevel(INumber? num_)
     {
         if (GetOperator(out ExpressionOperators.Select? selectA) &&
                 selectA is not ExpressionOperators.Select.Multiplication &&
@@ -72,17 +72,17 @@ public partial class Mathematics
             INumber? num = Level2();
             if (GetOperator(out ExpressionOperators.Select? selectB))
                 if (selectB is ExpressionOperators.Select.Multiplication || selectB is ExpressionOperators.Select.Division)
-                    return BuilderINumberLowLevel(
-                        new ExpressionOperators(num_, selectA.Value, BuilderINumberHighLevel(
-                            new ExpressionOperators(num, selectB.Value, Level2())
-                            )));
+                  return  BuilderINumberLowLevel(
+                      new ExpressionOperators(num_, selectA.Value, BuilderINumberHighLevel(
+                          new ExpressionOperators(num, selectB.Value, Level2())
+                          )));
                 else return BuilderINumberLowLevel(new ExpressionOperators(num_, selectA.Value, num));
             else return BuilderINumberLowLevel(new ExpressionOperators(num_, selectA.Value, BuilderINumberHighLevel(num)));
         }
         return BuilderINumberHighLevel(num_);
     }
 
-    public INumber? BuilderINumberHighLevel(INumber? num_)
+    private INumber? BuilderINumberHighLevel(INumber? num_)
     {
         if (GetOperator(out ExpressionOperators.Select? selectA) &&
                 selectA is ExpressionOperators.Select.Multiplication ||
@@ -91,7 +91,7 @@ public partial class Mathematics
             INumber? num = Level2();
             return BuilderINumberHighLevel(new ExpressionOperators(num_, selectA.Value, num));
         }
-        else if (_keyValues.TryGetValue(_txt, out BuilderNumber? value))
+        else if (_keyValues.TryGetValue(_currentToken, out BuilderNumber? value))
             return value.Get(num_);
         return num_;
     }
@@ -99,17 +99,17 @@ public partial class Mathematics
     private INumber? Level2()
     {
         Next();
-        if (_txt == string.Empty) return null;
+        if (_currentToken == string.Empty) return null;
         INumber number;
-        if (сache.TryGetValue(_txt, out number))
+        if (cache.TryGetValue(_currentToken, out number))
         {
             Next();
             return number;
         }
-        if (_keyValues.TryGetValue(_txt, out BuilderNumber? value))
+        if (_keyValues.TryGetValue(_currentToken, out BuilderNumber? value))
         {
             number = value.Get(null);
-            сache.Add(_txt, number);
+            cache.Add(_currentToken,number);
             return number;
         }
         return CreateNumber();
@@ -117,18 +117,18 @@ public partial class Mathematics
 
     private INumber CreateNumber()
     {
-        if (double.TryParse(_txt, NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
+        if (double.TryParse(_currentToken, NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
         {
             INumber number = new Number(value);
-            сache.Add(_txt, number);
+            cache.Add(_currentToken, number);
             Next();
             return number;
         }
-        throw new FormatException($"Invalid number format: {_txt}");
+        throw new FormatException($"Invalid number format: {_currentToken}");
     }
 
     private bool GetOperator(out ExpressionOperators.Select? select)
-        => (select = _txt switch
+        => (select = _currentToken switch
         {
             "+" => ExpressionOperators.Select.Addition,
             "-" => ExpressionOperators.Select.Subtraction,
@@ -138,17 +138,17 @@ public partial class Mathematics
         }) is not null;
 
     private bool InfoOperator()
-        => _txt switch
+        => _currentToken switch
         {
             "+" => true,
             "-" => true,
             "*" => true,
             "/" => true,
-            _ => _keyValues.TryGetValue(_txt, out _)
+            _ => _keyValues.TryGetValue(_currentToken, out _)
         };
 
     private void Next()
-        => _txt = _index < _matches.Count ?
+        => _currentToken = _index < _matches.Count ?
         _matches[_index++].Value :
         string.Empty;
 
@@ -164,7 +164,7 @@ partial class Mathematics
 
         public override INumber? Get(INumber? number)
         {
-            if (number is not null) throw new FormatException($"Invalid number format: {txt}");
+            if (number is not null) throw new FormatException($"Invalid number format: {_currentToken}");
             number = Level2();
             return number is not null ? new Negative(number) : null;
         }
@@ -176,11 +176,11 @@ partial class Mathematics
 
         public override INumber? Get(INumber? number)
         {
-            if (number is not null) throw new FormatException($"Invalid number format: {txt}");
+            if (number is not null) throw new FormatException($"Invalid number format: {_currentToken}");
             number = Level1();
             if (number is null) return null;
             number = new Parentheses(number);
-            if (txt is not ")") throw new InvalidOperationException("Expected closing parenthesis");
+            if (_currentToken is not ")") throw new InvalidOperationException("Expected closing parenthesis");
             Next();
             return number;
         }
@@ -193,7 +193,7 @@ partial class Mathematics
     public abstract class BuilderNumber
     {
 
-        protected string txt { get => mathematics is null ? string.Empty : mathematics._txt; }
+        protected string _currentToken { get => mathematics is null ? string.Empty : mathematics._currentToken; }
 
         private Mathematics? mathematics = null;
 
