@@ -3,8 +3,12 @@
   "WorkspaceRootPath": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{62A914AE-2CD6-4E6C-B159-7225677BE5DC}|CalculatorLibrary\\CalculatorLibrary.csproj|d:\\allrepos\\github\\calculatorlibrary\\calculatorlibrary\\calculatorlibrary\\mathematics.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{62A914AE-2CD6-4E6C-B159-7225677BE5DC}|CalculatorLibrary\\CalculatorLibrary.csproj|solutionrelative:calculatorlibrary\\mathematics.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{62A914AE-2CD6-4E6C-B159-7225677BE5DC}|CalculatorLibrary\\CalculatorLibrary.csproj|d:\\allrepos\\github\\calculatorlibrary\\calculatorlibrary\\calculatorlibrary\\element number\\expressionoperators.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{62A914AE-2CD6-4E6C-B159-7225677BE5DC}|CalculatorLibrary\\CalculatorLibrary.csproj|solutionrelative:calculatorlibrary\\element number\\expressionoperators.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{62A914AE-2CD6-4E6C-B159-7225677BE5DC}|CalculatorLibrary\\CalculatorLibrary.csproj|d:\\allrepos\\github\\calculatorlibrary\\calculatorlibrary\\calculatorlibrary\\element number\\inumber.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{62A914AE-2CD6-4E6C-B159-7225677BE5DC}|CalculatorLibrary\\CalculatorLibrary.csproj|solutionrelative:calculatorlibrary\\element number\\inumber.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,14 +27,27 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Mathematics.cs",
-              "DocumentMoniker": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\CalculatorLibrary\\Mathematics.cs",
-              "RelativeDocumentMoniker": "CalculatorLibrary\\Mathematics.cs",
-              "ToolTip": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\CalculatorLibrary\\Mathematics.cs",
-              "RelativeToolTip": "CalculatorLibrary\\Mathematics.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAmwBwAAAAgAAAAAAAAAA==",
+              "Title": "ExpressionOperators.cs",
+              "DocumentMoniker": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\CalculatorLibrary\\Element Number\\ExpressionOperators.cs",
+              "RelativeDocumentMoniker": "CalculatorLibrary\\Element Number\\ExpressionOperators.cs",
+              "ToolTip": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\CalculatorLibrary\\Element Number\\ExpressionOperators.cs",
+              "RelativeToolTip": "CalculatorLibrary\\Element Number\\ExpressionOperators.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-19T12:20:54.65Z",
+              "WhenOpened": "2026-08-17T11:13:33.467Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "INumber.cs",
+              "DocumentMoniker": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\CalculatorLibrary\\Element Number\\INumber.cs",
+              "RelativeDocumentMoniker": "CalculatorLibrary\\Element Number\\INumber.cs",
+              "ToolTip": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\CalculatorLibrary\\Element Number\\INumber.cs",
+              "RelativeToolTip": "CalculatorLibrary\\Element Number\\INumber.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-08-17T11:13:12.893Z",
               "EditorCaption": ""
             }
           ]

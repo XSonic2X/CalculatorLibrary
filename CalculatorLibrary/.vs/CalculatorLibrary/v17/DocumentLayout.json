@@ -1,12 +1,7 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{62A914AE-2CD6-4E6C-B159-7225677BE5DC}|CalculatorLibrary\\CalculatorLibrary.csproj|d:\\allrepos\\github\\calculatorlibrary\\calculatorlibrary\\calculatorlibrary\\mathematics.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{62A914AE-2CD6-4E6C-B159-7225677BE5DC}|CalculatorLibrary\\CalculatorLibrary.csproj|solutionrelative:calculatorlibrary\\mathematics.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -14,24 +9,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": -1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Mathematics.cs",
-              "DocumentMoniker": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\CalculatorLibrary\\Mathematics.cs",
-              "RelativeDocumentMoniker": "CalculatorLibrary\\Mathematics.cs",
-              "ToolTip": "D:\\AllRepos\\GitHub\\CalculatorLibrary\\CalculatorLibrary\\CalculatorLibrary\\Mathematics.cs",
-              "RelativeToolTip": "CalculatorLibrary\\Mathematics.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAmwBwAAAAgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-19T12:20:54.65Z",
-              "EditorCaption": ""
             }
           ]
         }

@@ -1,7 +1,9 @@
-﻿using System;
-using static CalculatorLibrary.Element_Number.ExpressionOperators;
+﻿using static CalculatorLibrary.Element_Number.ExpressionOperators;
 
 namespace CalculatorLibrary.Element_Number;
+
+public delegate double DNumberOperators(INumber num1, INumber num2);
+public delegate string DNumberString(INumber num1, INumber num2);
 
 public sealed partial class ExpressionOperators(INumber num1, Select select, INumber num2) : INumber
 {
@@ -15,7 +17,7 @@ public sealed partial class ExpressionOperators(INumber num1, Select select, INu
     public override string ToString()
         => toString[(int)select](num1, num2);
 
-    public static readonly Func<INumber, INumber, double>[] match =
+    public static readonly DNumberOperators[] match =
         [
         static (num1, num2) => num1 + num2,
         static (num1, num2) => num1 - num2,
@@ -23,7 +25,7 @@ public sealed partial class ExpressionOperators(INumber num1, Select select, INu
         static (num1, num2) => num1 / num2,
         ];
 
-    public static readonly Func<INumber, INumber, string>[] toString =
+    public static readonly DNumberString[] toString =
         [
         static (num1, num2) => $"{num1}+{num2}",
         static (num1, num2) => $"{num1}-{num2}",
