@@ -4,7 +4,7 @@ Designed to handle standard arithmetic order of operations and allow for custom 
 
 ### 1. Basic Usage
 ```csharp
-public static void Main()
+static void Main(string[] args)
 {
     Mathematics mathematics = new();
     Demo(mathematics, "5-3-2");
@@ -15,6 +15,12 @@ public static void Main()
     Demo(mathematics, "-2+(5+5)*2+1");
     Demo(mathematics, "2*5+5*4");
     Demo(mathematics, "100/2/2/2");
+    Demo(mathematics, "2*3-4");
+    Demo(mathematics, "1+2*3-4");
+    Demo(mathematics, "10/2-1");
+    Demo(mathematics, "2*3-4*5");
+    Demo(mathematics, "-5*3-2");
+    Demo(mathematics, "2*3-");
     Console.WriteLine("End");
     Console.ReadLine();
 }
@@ -35,6 +41,12 @@ static void Demo(Mathematics m, string _currentToken)
 -2+(5+5)*2+1 = 19
 2*5+5*4 = 30
 100/2/2/2 = 12,5
+2*3-4 = 2
+1+2*3-4 = 3
+10/2-1 = 4
+2*3-4*5 = -14
+-5*3-2 = -17
+Nop
 End
 ```
 
@@ -143,7 +155,7 @@ class CustomBuilderNumber(DynamicNumber d) : BuilderNumber
 {
     private DynamicNumber d = d;
 
-    public override INumber? Get()
+    public override INumber? Get(INumber? number)
     {
         Next();
         return new NumberCustom(d);

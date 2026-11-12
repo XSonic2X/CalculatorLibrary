@@ -51,7 +51,7 @@ public partial class Mathematics
             _index = 0;
             number = Level1();
             cache.Clear();
-            return number is not null;
+            return number is not null && _currentToken.Length == 0;
         }
     }
 
@@ -59,7 +59,11 @@ public partial class Mathematics
     {
         INumber? num = Level2();
         while (_index < _matches.Count && InfoOperator())
+        {
+            int before = _index;
             num = BuilderINumberLowLevel(num);
+            if (_index == before) return null;
+        }
         return num;
     }
 
@@ -84,47 +88,60 @@ public partial class Mathematics
 
     private INumber? BuilderINumberHighLevel(INumber? num_)
     {
-        if (GetOperator(out ExpressionOperators.Select? selectA) &&
-                selectA is ExpressionOperators.Select.Multiplication ||
-                selectA is ExpressionOperators.Select.Division)
-        {
-            INumber? num = Level2();
-            return BuilderINumberHighLevel(new ExpressionOperators(num_, selectA.Value, num));
-        }
-        else if (_keyValues.TryGetValue(_currentToken, out BuilderNumber? value))
+        if (GetOperator(out ExpressionOperators.Select? selectA))
+            if (selectA is ExpressionOperators.Select.Multiplication ||
+                            selectA is ExpressionOperators.Select.Division)
+            {
+                INumber? num = Level2();
+                return BuilderINumberHighLevel(new ExpressionOperators(num_, selectA.Value, num));
+            }
+            else return num_;
+        else if (_keyValues.TryGetValue(_currentToken, out var value))
             return value.Get(num_);
+
         return num_;
     }
 
     private INumber? Level2()
     {
         Next();
-        if (_currentToken == string.Empty) return null;
-        INumber number;
-        if (cache.TryGetValue(_currentToken, out number))
-        {
-            Next();
-            return number;
-        }
-        if (_keyValues.TryGetValue(_currentToken, out BuilderNumber? value))
-        {
-            number = value.Get(null);
-            cache.Add(_currentToken,number);
-            return number;
-        }
-        return CreateNumber();
-    }
+        string token = _currentToken;
+        if (token.Length == 0) 
+            return null;
 
-    private INumber CreateNumber()
-    {
-        if (double.TryParse(_currentToken, NumberStyles.Any, CultureInfo.InvariantCulture, out double value))
+        if (token is "-" or "(")
+            return _keyValues[token].Get(null);
+
+        INumber? number;
+
+        if (_keyValues.TryGetValue(token, out BuilderNumber? builder))
         {
-            INumber number = new Number(value);
-            cache.Add(_currentToken, number);
-            Next();
+            if (cache.TryGetValue(token, out number))
+                goto Next;
+
+            int start = _index;
+            number = builder.Get(null);
+            if (number is null) return null;
+            if (_index == start) Next();
+            if (_index == start + 1) cache[token] = number;
             return number;
         }
-        throw new FormatException($"Invalid number format: {_currentToken}");
+
+        if (cache.TryGetValue(token, out number)) 
+            goto Next;
+
+        if (double.TryParse(token, NumberStyles.Float, CultureInfo.InvariantCulture, out double v))
+        {
+            number = new Number(v);
+            cache[token] = number;
+            goto Next;
+        }
+
+        return null;
+
+    Next:
+        Next();
+        return number;
     }
 
     private bool GetOperator(out ExpressionOperators.Select? select)
